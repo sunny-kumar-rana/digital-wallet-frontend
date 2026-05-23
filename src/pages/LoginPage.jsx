@@ -1,52 +1,73 @@
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import api from "../services/api";
 
 function LoginPage() {
-    return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-100">
+  const navigate = useNavigate();
 
-            <div className="bg-white p-8 rounded-2xl shadow-lg w-[400px]">
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
-                <h1 className="text-3xl font-bold text-center mb-6">
-                    Digital Wallet Login
-                </h1>
+  const handleLogin = async (e) => {
+    e.preventDefault();
 
-                <form className="flex flex-col gap-4">
+    try {
+      const response = await api.post("/login", {
+        email,
+        password,
+      });
 
-                    <input
-                        type="email"
-                        placeholder="Enter email"
-                        className="border p-3 rounded-lg outline-none"
-                    />
+      localStorage.setItem("user", JSON.stringify(response.data));
 
-                    <input
-                        type="password"
-                        placeholder="Enter password"
-                        className="border p-3 rounded-lg outline-none"
-                    />
+      alert(response.data.message);
 
-                    <button
-                        type="submit"
-                        className="bg-black text-white p-3 rounded-lg hover:opacity-90"
-                    >
-                        Login
-                    </button>
+      navigate("/dashboard");
+    } catch (error) {
+      alert(error.response.data.error);
+    }
+  };
 
-                </form>
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+      <div className="bg-white p-8 rounded-2xl shadow-lg w-[400px]">
+        <h1 className="text-3xl font-bold text-center mb-6">
+          Digital Wallet Login
+        </h1>
 
-                <p className="mt-5 text-center">
-                    Don't have an account?{" "}
-                    <Link
-                        to="/register"
-                        className="text-blue-600 font-semibold"
-                    >
-                        Register
-                    </Link>
-                </p>
+        <form onSubmit={handleLogin} className="flex flex-col gap-4">
+          <input
+            type="email"
+            placeholder="Enter email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="border p-3 rounded-lg outline-none"
+          />
 
-            </div>
+          <input
+            type="password"
+            placeholder="Enter password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="border p-3 rounded-lg outline-none"
+          />
 
-        </div>
-    )
+          <button
+            type="submit"
+            className="bg-black text-white p-3 rounded-lg hover:opacity-90"
+          >
+            Login
+          </button>
+        </form>
+
+        <p className="mt-5 text-center">
+          Don't have an account?{" "}
+          <Link to="/register" className="text-blue-600 font-semibold">
+            Register
+          </Link>
+        </p>
+      </div>
+    </div>
+  );
 }
 
-export default LoginPage
+export default LoginPage;

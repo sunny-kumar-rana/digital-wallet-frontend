@@ -17,7 +17,8 @@ function LoginPage() {
         password,
       });
 
-      localStorage.setItem("user", JSON.stringify(response.data));
+      localStorage.setItem("userId", response.data.userId);
+      localStorage.setItem("name", response.data.name);
 
       alert(response.data.message);
 

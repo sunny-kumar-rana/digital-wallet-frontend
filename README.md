@@ -1,16 +1,172 @@
-# React + Vite
+# Digital Wallet Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A React frontend for the Digital Wallet application.
 
-Currently, two official plugins are available:
+The frontend communicates with the Spring Boot backend using REST APIs.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+---
 
-## React Compiler
+# Tech Stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- React
+- Vite
+- Axios
+- React Router DOM
+- Tailwind CSS
 
-## Expanding the ESLint configuration
+---
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+# Features Implemented
+
+## Authentication UI
+- User Registration Page
+- User Login Page
+- Login persistence using localStorage
+- Logout functionality
+
+---
+
+## Dashboard
+- Wallet balance display
+- Money transfer form
+- Transaction history display
+- Protected dashboard route
+
+---
+
+## Frontend Architecture
+- Page-based structure
+- API service layer using Axios
+- Controlled React forms
+- React Hooks
+- Routing using React Router
+
+---
+
+# Pages
+
+## Login Page
+- Login form
+- API integration
+- Redirect after successful login
+
+---
+
+## Register Page
+- Registration form
+- Backend integration
+- Redirect to login after registration
+
+---
+
+## Dashboard
+- Balance display
+- Transfer money
+- Transaction history
+- Logout
+
+---
+
+# Running the Frontend
+
+## Install Dependencies
+
+```bash
+npm install
+```
+
+---
+
+## Start Development Server
+
+```bash
+npm run dev
+```
+
+Frontend runs on:
+
+```text
+http://localhost:5173
+```
+
+---
+
+# Backend Requirement
+
+Backend must be running on:
+
+```text
+http://localhost:8080
+```
+
+---
+
+# Project Structure
+
+```text
+src
+│
+├── components
+├── pages
+├── services
+│   └── api.js
+├── App.jsx
+├── main.jsx
+└── index.css
+```
+
+---
+
+# Current Limitations
+
+- No JWT handling
+- No protected API requests
+- No refresh token handling
+- No loading states
+- No notifications/toasts
+- No profile management
+- No responsive mobile optimization
+- Minimal dashboard UI
+
+---
+
+# Future Plans
+
+## Authentication
+- JWT authentication
+- Auto-login
+- Session persistence
+- Route guards
+
+---
+
+## UI Improvements
+- Responsive dashboard
+- Navbar/sidebar
+- Better transaction cards
+- Loading animations
+- Toast notifications
+- Dark mode
+
+---
+
+## Wallet Features
+- Deposit money UI
+- Withdraw money UI
+- User profile section
+- Transfer confirmation modal
+
+---
+
+## Advanced Features
+- Charts and analytics
+- Monthly transaction summaries
+- Search/filter transactions
+- Pagination
+- Real-time updates
+
+---
+
+# Status
+
+Frontend is currently functional and integrated with the Spring Boot backend.

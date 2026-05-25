@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 
 function DashboardPage() {
   const [balance, setBalance] = useState(0);
+  const [receiverId, setReceiverId] = useState("");
+  const [amount, setAmount] = useState("");
   const navigate = useNavigate();
 
   const userId = localStorage.getItem("userId");
@@ -28,6 +30,27 @@ function DashboardPage() {
     }
   };
 
+  const handleTransfer = async (e) => {
+    e.preventDefault();
+
+    try {
+      const response = await api.post("/transfer", {
+        senderId: Number(userId),
+        receiverId: Number(receiverId),
+        amount: Number(amount),
+      });
+
+      alert(response.data.message);
+
+      fetchBalance();
+
+      setReceiverId("");
+      setAmount("");
+    } catch (error) {
+      alert(error.response.data.error);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 p-10">
       <div className="max-w-4xl mx-auto">
@@ -47,6 +70,34 @@ function DashboardPage() {
           <h2 className="text-2xl font-semibold mb-4">Wallet Balance</h2>
 
           <p className="text-5xl font-bold">₹ {balance}</p>
+        </div>
+        <div className="bg-white p-8 rounded-2xl shadow-lg mt-8">
+          <h2 className="text-2xl font-semibold mb-4">Transfer Money</h2>
+
+          <form onSubmit={handleTransfer} className="flex flex-col gap-4">
+            <input
+              type="number"
+              placeholder="Receiver User ID"
+              value={receiverId}
+              onChange={(e) => setReceiverId(e.target.value)}
+              className="border p-3 rounded-lg outline-none"
+            />
+
+            <input
+              type="number"
+              placeholder="Amount"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              className="border p-3 rounded-lg outline-none"
+            />
+
+            <button
+              type="submit"
+              className="bg-black text-white p-3 rounded-lg"
+            >
+              Transfer
+            </button>
+          </form>
         </div>
       </div>
     </div>

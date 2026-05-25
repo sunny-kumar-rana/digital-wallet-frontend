@@ -6,6 +6,7 @@ function DashboardPage() {
   const [balance, setBalance] = useState(0);
   const [receiverId, setReceiverId] = useState("");
   const [amount, setAmount] = useState("");
+  const [transactions, setTransactions] = useState([]);
   const navigate = useNavigate();
 
   const userId = localStorage.getItem("userId");
@@ -18,6 +19,7 @@ function DashboardPage() {
     }
 
     fetchBalance();
+    fetchTransactions();
   }, []);
 
   const fetchBalance = async () => {
@@ -43,9 +45,20 @@ function DashboardPage() {
       alert(response.data.message);
 
       fetchBalance();
+      fetchTransactions();
 
       setReceiverId("");
       setAmount("");
+    } catch (error) {
+      alert(error.response.data.error);
+    }
+  };
+
+  const fetchTransactions = async () => {
+    try {
+      const response = await api.get(`/transactions?userId=${userId}`);
+
+      setTransactions(response.data);
     } catch (error) {
       alert(error.response.data.error);
     }
@@ -98,6 +111,36 @@ function DashboardPage() {
               Transfer
             </button>
           </form>
+        </div>
+        <div className="bg-white p-8 rounded-2xl shadow-lg mt-8">
+          <h2 className="text-2xl font-semibold mb-6">Transaction History</h2>
+
+          <div className="flex flex-col gap-4">
+            {transactions.map((tx) => (
+              <div key={tx.id} className="border rounded-xl p-4">
+                <p>
+                  <span className="font-semibold">Transaction ID:</span> {tx.id}
+                </p>
+
+                <p>
+                  <span className="font-semibold">Sender:</span> {tx.senderId}
+                </p>
+
+                <p>
+                  <span className="font-semibold">Receiver:</span>{" "}
+                  {tx.receiverId}
+                </p>
+
+                <p>
+                  <span className="font-semibold">Amount:</span> ₹ {tx.amount}
+                </p>
+
+                <p>
+                  <span className="font-semibold">Status:</span> {tx.status}
+                </p>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>

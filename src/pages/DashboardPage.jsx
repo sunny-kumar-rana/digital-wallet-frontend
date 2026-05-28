@@ -7,6 +7,7 @@ function DashboardPage() {
   const [receiverId, setReceiverId] = useState("");
   const [amount, setAmount] = useState("");
   const [transactions, setTransactions] = useState([]);
+  const [depositAmount, setDepositAmount] = useState("");
   const navigate = useNavigate();
 
   const userId = localStorage.getItem("userId");
@@ -59,6 +60,25 @@ function DashboardPage() {
       const response = await api.get(`/transactions?userId=${userId}`);
 
       setTransactions(response.data);
+    } catch (error) {
+      alert(error.response.data.error);
+    }
+  };
+
+  const handleDeposit = async (e) => {
+    e.preventDefault();
+
+    try {
+      const response = await api.post(
+        `/deposit?userId=${userId}&amount=${depositAmount}`,
+      );
+
+      alert(response.data.message);
+
+      fetchBalance();
+      fetchTransactions();
+
+      setDepositAmount("");
     } catch (error) {
       alert(error.response.data.error);
     }

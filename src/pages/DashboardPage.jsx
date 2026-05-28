@@ -105,6 +105,26 @@ function DashboardPage() {
           <p className="text-5xl font-bold">₹ {balance}</p>
         </div>
         <div className="bg-white p-8 rounded-2xl shadow-lg mt-8">
+          <h2 className="text-2xl font-semibold mb-4">Deposit Money</h2>
+
+          <form onSubmit={handleDeposit} className="flex flex-col gap-4">
+            <input
+              type="number"
+              placeholder="Enter amount"
+              value={depositAmount}
+              onChange={(e) => setDepositAmount(e.target.value)}
+              className="border p-3 rounded-lg outline-none"
+            />
+
+            <button
+              type="submit"
+              className="bg-black text-white p-3 rounded-lg"
+            >
+              Deposit
+            </button>
+          </form>
+        </div>
+        <div className="bg-white p-8 rounded-2xl shadow-lg mt-8">
           <h2 className="text-2xl font-semibold mb-4">Transfer Money</h2>
 
           <form onSubmit={handleTransfer} className="flex flex-col gap-4">

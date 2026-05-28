@@ -94,7 +94,7 @@ function DashboardPage() {
 
             navigate("/");
           }}
-          className="bg-black text-white px-5 py-2 rounded-lg mb-8"
+          className="bg-black text-white px-5 py-2 rounded-lg mb-8 bg-violet-500 hover:bg-violet-600 focus:outline-2 focus:outline-offset-2 focus:outline-violet-500 active:bg-violet-700"
         >
           Logout
         </button>
@@ -118,7 +118,7 @@ function DashboardPage() {
 
             <button
               type="submit"
-              className="bg-black text-white p-3 rounded-lg"
+              className="bg-black text-white p-3 rounded-lg bg-violet-500 hover:bg-violet-600 focus:outline-2 focus:outline-offset-2 focus:outline-violet-500 active:bg-violet-700"
             >
               Deposit
             </button>
@@ -146,7 +146,7 @@ function DashboardPage() {
 
             <button
               type="submit"
-              className="bg-black text-white p-3 rounded-lg"
+              className="bg-black text-white p-3 rounded-lg bg-violet-500 hover:bg-violet-600 focus:outline-2 focus:outline-offset-2 focus:outline-violet-500 active:bg-violet-700"
             >
               Transfer
             </button>
@@ -176,7 +176,14 @@ function DashboardPage() {
                 </p>
 
                 <p>
-                  <span className="font-semibold">Status:</span> {tx.status}
+                  <span className="font-semibold">Status:</span>
+
+                  <span
+                    className={`ml-2 px-3 py-1 rounded-full text-white text-sm
+                    ${tx.status === "DEPOSIT" ? "bg-green-500" : "bg-blue-500"}`}
+                  >
+                    {tx.status}
+                  </span>
                 </p>
               </div>
             ))}

@@ -8,6 +8,7 @@ function DashboardPage() {
   const [amount, setAmount] = useState("");
   const [transactions, setTransactions] = useState([]);
   const [depositAmount, setDepositAmount] = useState("");
+  const [withdrawAmount, setWithdrawAmount] = useState("");
   const navigate = useNavigate();
 
   const userId = localStorage.getItem("userId");
@@ -84,6 +85,25 @@ function DashboardPage() {
     }
   };
 
+  const handleWithdraw = async (e) => {
+    e.preventDefault();
+
+    try {
+      const response = await api.post(
+        `/withdraw?userId=${userId}&amount=${withdrawAmount}`,
+      );
+
+      alert(response.data.message);
+
+      fetchBalance();
+      fetchTransactions();
+
+      setWithdrawAmount("");
+    } catch (error) {
+      alert(error.response.data.error);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 p-10">
       <div className="max-w-4xl mx-auto">
@@ -124,6 +144,28 @@ function DashboardPage() {
             </button>
           </form>
         </div>
+
+        <div className="bg-white p-8 rounded-2xl shadow-lg mt-8">
+          <h2 className="text-2xl font-semibold mb-4">Withdraw Money</h2>
+
+          <form onSubmit={handleWithdraw} className="flex flex-col gap-4">
+            <input
+              type="number"
+              placeholder="Enter amount"
+              value={withdrawAmount}
+              onChange={(e) => setWithdrawAmount(e.target.value)}
+              className="border p-3 rounded-lg outline-none"
+            />
+
+            <button
+              type="submit"
+              className="bg-red-600 text-white p-3 rounded-lg"
+            >
+              Withdraw
+            </button>
+          </form>
+        </div>
+
         <div className="bg-white p-8 rounded-2xl shadow-lg mt-8">
           <h2 className="text-2xl font-semibold mb-4">Transfer Money</h2>
 
@@ -180,7 +222,13 @@ function DashboardPage() {
 
                   <span
                     className={`ml-2 px-3 py-1 rounded-full text-white text-sm
-                    ${tx.status === "DEPOSIT" ? "bg-green-500" : "bg-blue-500"}`}
+                    ${
+                      tx.status === "DEPOSIT"
+                        ? "bg-green-500"
+                        : tx.status === "WITHDRAW"
+                          ? "bg-red-500"
+                          : "bg-blue-500"
+                    }`}
                   >
                     {tx.status}
                   </span>

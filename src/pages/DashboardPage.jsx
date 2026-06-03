@@ -223,15 +223,20 @@ function DashboardPage() {
                   <span
                     className={`ml-2 px-3 py-1 rounded-full text-white text-sm
                     ${
-                      tx.status === "DEPOSIT"
+                      tx.transactionType === "DEPOSIT"
                         ? "bg-green-500"
-                        : tx.status === "WITHDRAW"
+                        : tx.transactionType === "WITHDRAW"
                           ? "bg-red-500"
                           : "bg-blue-500"
                     }`}
                   >
-                    {tx.status}
+                    {tx.transactionType}
                   </span>
+                </p>
+                <p>
+                  <span className="font-semibold">Status:</span>
+
+                  {tx.status}
                 </p>
               </div>
             ))}

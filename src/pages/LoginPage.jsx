@@ -1,5 +1,6 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
+import toast from "react-hot-toast";
 import api from "../services/api";
 
 function LoginPage() {
@@ -7,30 +8,40 @@ function LoginPage() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleLogin = async (e) => {
     e.preventDefault();
 
+    if (!email.trim() || !password) {
+      toast.error("Email and password are required");
+      return;
+    }
+
     try {
+      setLoading(true);
+
       const response = await api.post("/login", {
-        email,
+        email: email.trim(),
         password,
       });
 
       localStorage.setItem("token", response.data.token);
       localStorage.setItem("name", response.data.name);
 
-      alert(response.data.message);
+      toast.success(response.data.message || "Login successful");
 
       navigate("/dashboard");
     } catch (error) {
-      alert(error.response?.data?.error || "Login failed");
+      toast.error(error.response?.data?.error || "Login failed");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="bg-white p-8 rounded-2xl shadow-lg w-[400px]">
+    <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
+      <div className="bg-white p-8 rounded-2xl shadow-lg w-full max-w-[400px]">
         <h1 className="text-3xl font-bold text-center mb-6">
           Digital Wallet Login
         </h1>
@@ -42,6 +53,7 @@ function LoginPage() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="border p-3 rounded-lg outline-none"
+            disabled={loading}
             required
           />
 
@@ -51,14 +63,16 @@ function LoginPage() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="border p-3 rounded-lg outline-none"
+            disabled={loading}
             required
           />
 
           <button
             type="submit"
-            className="bg-violet-500 text-white p-3 rounded-lg hover:bg-violet-600 focus:outline-2 focus:outline-offset-2 focus:outline-violet-500 active:bg-violet-700"
+            disabled={loading}
+            className="bg-violet-500 text-white p-3 rounded-lg hover:bg-violet-600 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Login
+            {loading ? "Logging in..." : "Login"}
           </button>
         </form>
 

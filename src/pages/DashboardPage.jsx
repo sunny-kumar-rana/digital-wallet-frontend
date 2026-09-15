@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 import api from "../services/api";
 
 function DashboardPage() {
@@ -10,18 +11,43 @@ function DashboardPage() {
   const [depositAmount, setDepositAmount] = useState("");
   const [withdrawAmount, setWithdrawAmount] = useState("");
 
+  const [loading, setLoading] = useState(true);
+  const [operation, setOperation] = useState("");
+
   const navigate = useNavigate();
 
   const name = localStorage.getItem("name");
-  const token = localStorage.getItem("token");
+
+  const fetchBalance = async () => {
+    try {
+      const response = await api.get("/balance");
+      setBalance(response.data.balance);
+    } catch (error) {
+      toast.error(
+        error.response?.data?.error || "Failed to fetch balance",
+      );
+    }
+  };
+
+  const fetchTransactions = async () => {
+    try {
+      const response = await api.get("/transactions");
+      setTransactions(response.data);
+    } catch (error) {
+      toast.error(
+        error.response?.data?.error || "Failed to fetch transactions",
+      );
+    }
+  };
+
+  const refreshDashboard = async () => {
+    await Promise.all([fetchBalance(), fetchTransactions()]);
+  };
 
   useEffect(() => {
-    if (!token) {
-      navigate("/");
-      return;
-    }
-
     const loadDashboard = async () => {
+      setLoading(true);
+
       try {
         const [balanceResponse, transactionsResponse] = await Promise.all([
           api.get("/balance"),
@@ -31,80 +57,87 @@ function DashboardPage() {
         setBalance(balanceResponse.data.balance);
         setTransactions(transactionsResponse.data);
       } catch (error) {
-        alert(
-          error.response?.data?.error ||
-          "Failed to load dashboard",
+        toast.error(
+          error.response?.data?.error || "Failed to load dashboard",
         );
+      } finally {
+        setLoading(false);
       }
     };
 
     loadDashboard();
-  }, [navigate, token]);
-
-  const fetchBalance = async () => {
-    try {
-      const response = await api.get("/balance");
-
-      setBalance(response.data.balance);
-    } catch (error) {
-      alert(error.response?.data?.error || "Failed to fetch balance");
-    }
-  };
-
-  const fetchTransactions = async () => {
-    try {
-      const response = await api.get("/transactions");
-
-      setTransactions(response.data);
-    } catch (error) {
-      alert(
-        error.response?.data?.error || "Failed to fetch transactions",
-      );
-    }
-  };
+  }, []);
 
   const handleDeposit = async (e) => {
     e.preventDefault();
 
+    if (!depositAmount || Number(depositAmount) <= 0) {
+      toast.error("Enter a valid deposit amount");
+      return;
+    }
+
     try {
+      setOperation("deposit");
+
       const response = await api.post("/deposit", {
         amount: Number(depositAmount),
       });
 
-      alert(response.data.message);
+      toast.success(response.data.message);
 
-      await fetchBalance();
-      await fetchTransactions();
-
+      await refreshDashboard();
       setDepositAmount("");
     } catch (error) {
-      alert(error.response?.data?.error || "Deposit failed");
+      toast.error(error.response?.data?.error || "Deposit failed");
+    } finally {
+      setOperation("");
     }
   };
 
   const handleWithdraw = async (e) => {
     e.preventDefault();
 
+    if (!withdrawAmount || Number(withdrawAmount) <= 0) {
+      toast.error("Enter a valid withdrawal amount");
+      return;
+    }
+
     try {
+      setOperation("withdraw");
+
       const response = await api.post("/withdraw", {
         amount: Number(withdrawAmount),
       });
 
-      alert(response.data.message);
+      toast.success(response.data.message);
 
-      await fetchBalance();
-      await fetchTransactions();
-
+      await refreshDashboard();
       setWithdrawAmount("");
     } catch (error) {
-      alert(error.response?.data?.error || "Withdrawal failed");
+      toast.error(
+        error.response?.data?.error || "Withdrawal failed",
+      );
+    } finally {
+      setOperation("");
     }
   };
 
   const handleTransfer = async (e) => {
     e.preventDefault();
 
+    if (!receiverId || Number(receiverId) <= 0) {
+      toast.error("Enter a valid receiver ID");
+      return;
+    }
+
+    if (!amount || Number(amount) <= 0) {
+      toast.error("Enter a valid transfer amount");
+      return;
+    }
+
     try {
+      setOperation("transfer");
+
       const response = await api.post(
         "/transfer",
         {
@@ -118,15 +151,18 @@ function DashboardPage() {
         },
       );
 
-      alert(response.data.message);
+      toast.success(response.data.message);
 
-      await fetchBalance();
-      await fetchTransactions();
+      await refreshDashboard();
 
       setReceiverId("");
       setAmount("");
     } catch (error) {
-      alert(error.response?.data?.error || "Transfer failed");
+      toast.error(
+        error.response?.data?.error || "Transfer failed",
+      );
+    } finally {
+      setOperation("");
     }
   };
 
@@ -134,48 +170,54 @@ function DashboardPage() {
     localStorage.removeItem("token");
     localStorage.removeItem("name");
 
+    toast.success("Logged out successfully");
+
     navigate("/");
   };
 
+  const isOperating = operation !== "";
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-100">
+        <p className="text-xl font-semibold">Loading wallet...</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gray-100 p-10">
+    <div className="min-h-screen bg-gray-100 p-4 sm:p-6 lg:p-10">
       <div className="max-w-4xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
-          <h1 className="text-4xl font-bold">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
+          <h1 className="text-3xl sm:text-4xl font-bold">
             Welcome, {name}
           </h1>
 
           <button
             onClick={handleLogout}
-            className="bg-violet-500 text-white px-5 py-2 rounded-lg hover:bg-violet-600 focus:outline-2 focus:outline-offset-2 focus:outline-violet-500 active:bg-violet-700"
+            disabled={isOperating}
+            className="bg-gray-900 text-white px-5 py-2 rounded-lg hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Logout
           </button>
         </div>
 
-        {/* Balance */}
-
-        <div className="bg-white p-8 rounded-2xl shadow-lg">
-          <h2 className="text-2xl font-semibold mb-4">
+        <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-lg">
+          <h2 className="text-xl sm:text-2xl font-semibold mb-4">
             Wallet Balance
           </h2>
 
-          <p className="text-5xl font-bold">
-            ₹ {balance}
+          <p className="text-4xl sm:text-5xl font-bold">
+            ₹ {Number(balance).toFixed(2)}
           </p>
         </div>
 
-        {/* Deposit */}
-
-        <div className="bg-white p-8 rounded-2xl shadow-lg mt-8">
-          <h2 className="text-2xl font-semibold mb-4">
+        <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-lg mt-8">
+          <h2 className="text-xl sm:text-2xl font-semibold mb-4">
             Deposit Money
           </h2>
 
-          <form
-            onSubmit={handleDeposit}
-            className="flex flex-col gap-4"
-          >
+          <form onSubmit={handleDeposit} className="flex flex-col gap-4">
             <input
               type="number"
               min="0.01"
@@ -184,29 +226,26 @@ function DashboardPage() {
               value={depositAmount}
               onChange={(e) => setDepositAmount(e.target.value)}
               className="border p-3 rounded-lg outline-none"
+              disabled={isOperating}
               required
             />
 
             <button
               type="submit"
-              className="bg-violet-500 text-white p-3 rounded-lg hover:bg-violet-600"
+              disabled={isOperating}
+              className="bg-violet-500 text-white p-3 rounded-lg hover:bg-violet-600 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Deposit
+              {operation === "deposit" ? "Depositing..." : "Deposit"}
             </button>
           </form>
         </div>
 
-        {/* Withdraw */}
-
-        <div className="bg-white p-8 rounded-2xl shadow-lg mt-8">
-          <h2 className="text-2xl font-semibold mb-4">
+        <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-lg mt-8">
+          <h2 className="text-xl sm:text-2xl font-semibold mb-4">
             Withdraw Money
           </h2>
 
-          <form
-            onSubmit={handleWithdraw}
-            className="flex flex-col gap-4"
-          >
+          <form onSubmit={handleWithdraw} className="flex flex-col gap-4">
             <input
               type="number"
               min="0.01"
@@ -215,29 +254,26 @@ function DashboardPage() {
               value={withdrawAmount}
               onChange={(e) => setWithdrawAmount(e.target.value)}
               className="border p-3 rounded-lg outline-none"
+              disabled={isOperating}
               required
             />
 
             <button
               type="submit"
-              className="bg-red-600 text-white p-3 rounded-lg hover:bg-red-700"
+              disabled={isOperating}
+              className="bg-red-600 text-white p-3 rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Withdraw
+              {operation === "withdraw" ? "Withdrawing..." : "Withdraw"}
             </button>
           </form>
         </div>
 
-        {/* Transfer */}
-
-        <div className="bg-white p-8 rounded-2xl shadow-lg mt-8">
-          <h2 className="text-2xl font-semibold mb-4">
+        <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-lg mt-8">
+          <h2 className="text-xl sm:text-2xl font-semibold mb-4">
             Transfer Money
           </h2>
 
-          <form
-            onSubmit={handleTransfer}
-            className="flex flex-col gap-4"
-          >
+          <form onSubmit={handleTransfer} className="flex flex-col gap-4">
             <input
               type="number"
               min="1"
@@ -245,6 +281,7 @@ function DashboardPage() {
               value={receiverId}
               onChange={(e) => setReceiverId(e.target.value)}
               className="border p-3 rounded-lg outline-none"
+              disabled={isOperating}
               required
             />
 
@@ -256,71 +293,43 @@ function DashboardPage() {
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               className="border p-3 rounded-lg outline-none"
+              disabled={isOperating}
               required
             />
 
             <button
               type="submit"
-              className="bg-violet-500 text-white p-3 rounded-lg hover:bg-violet-600"
+              disabled={isOperating}
+              className="bg-violet-500 text-white p-3 rounded-lg hover:bg-violet-600 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Transfer
+              {operation === "transfer" ? "Transferring..." : "Transfer"}
             </button>
           </form>
         </div>
 
-        {/* Transaction History */}
-
-        <div className="bg-white p-8 rounded-2xl shadow-lg mt-8">
-          <h2 className="text-2xl font-semibold mb-6">
+        <div className="bg-white p-6 sm:p-8 rounded-2xl shadow-lg mt-8">
+          <h2 className="text-xl sm:text-2xl font-semibold mb-6">
             Transaction History
           </h2>
 
-          <div className="flex flex-col gap-4">
-            {transactions.length === 0 ? (
-              <p className="text-gray-500">
-                No transactions yet.
-              </p>
-            ) : (
-              transactions.map((tx) => (
+          {transactions.length === 0 ? (
+            <p className="text-gray-500">
+              No transactions yet.
+            </p>
+          ) : (
+            <div className="flex flex-col gap-4">
+              {transactions.map((tx) => (
                 <div
                   key={tx.id}
-                  className="border rounded-xl p-4"
+                  className="border rounded-xl p-4 overflow-hidden"
                 >
-                  <p>
-                    <span className="font-semibold">
-                      Transaction ID:
-                    </span>{" "}
-                    {tx.id}
-                  </p>
-
-                  <p>
-                    <span className="font-semibold">
-                      Sender:
-                    </span>{" "}
-                    {tx.senderId}
-                  </p>
-
-                  <p>
-                    <span className="font-semibold">
-                      Receiver:
-                    </span>{" "}
-                    {tx.receiverId}
-                  </p>
-
-                  <p>
-                    <span className="font-semibold">
-                      Amount:
-                    </span>{" "}
-                    ₹ {tx.amount}
-                  </p>
-
-                  <p className="mt-2">
-                    <span className="font-semibold">
-                      Type:
-                    </span>
+                  <div className="flex flex-col sm:flex-row sm:justify-between gap-2 mb-3">
+                    <p className="font-semibold">
+                      Transaction #{tx.id}
+                    </p>
 
                     <span
-                      className={`ml-2 px-3 py-1 rounded-full text-white text-sm ${tx.transactionType === "DEPOSIT"
+                      className={`w-fit px-3 py-1 rounded-full text-white text-sm ${tx.transactionType === "DEPOSIT"
                         ? "bg-green-500"
                         : tx.transactionType === "WITHDRAW"
                           ? "bg-red-500"
@@ -329,22 +338,39 @@ function DashboardPage() {
                     >
                       {tx.transactionType}
                     </span>
-                  </p>
+                  </div>
 
-                  <p className="mt-2">
-                    <span className="font-semibold">
-                      Status:
-                    </span>{" "}
-                    {tx.status}
-                  </p>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+                    <p>
+                      <span className="font-semibold">Sender:</span>{" "}
+                      {tx.senderId}
+                    </p>
 
-                  <p className="mt-2 text-sm text-gray-500">
-                    {tx.createdAt}
-                  </p>
+                    <p>
+                      <span className="font-semibold">Receiver:</span>{" "}
+                      {tx.receiverId}
+                    </p>
+
+                    <p>
+                      <span className="font-semibold">Amount:</span>{" "}
+                      ₹ {tx.amount}
+                    </p>
+
+                    <p>
+                      <span className="font-semibold">Status:</span>{" "}
+                      {tx.status}
+                    </p>
+                  </div>
+
+                  {tx.createdAt && (
+                    <p className="text-xs text-gray-500 mt-3">
+                      {tx.createdAt}
+                    </p>
+                  )}
                 </div>
-              ))
-            )}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

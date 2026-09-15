@@ -21,9 +21,25 @@ function DashboardPage() {
       return;
     }
 
-    fetchBalance();
-    fetchTransactions();
-  }, []);
+    const loadDashboard = async () => {
+      try {
+        const [balanceResponse, transactionsResponse] = await Promise.all([
+          api.get("/balance"),
+          api.get("/transactions"),
+        ]);
+
+        setBalance(balanceResponse.data.balance);
+        setTransactions(transactionsResponse.data);
+      } catch (error) {
+        alert(
+          error.response?.data?.error ||
+          "Failed to load dashboard",
+        );
+      }
+    };
+
+    loadDashboard();
+  }, [navigate, token]);
 
   const fetchBalance = async () => {
     try {

@@ -17,14 +17,14 @@ function LoginPage() {
         password,
       });
 
-      localStorage.setItem("userId", response.data.userId);
+      localStorage.setItem("token", response.data.token);
       localStorage.setItem("name", response.data.name);
 
       alert(response.data.message);
 
       navigate("/dashboard");
     } catch (error) {
-      alert(error.response.data.error);
+      alert(error.response?.data?.error || "Login failed");
     }
   };
 
@@ -42,6 +42,7 @@ function LoginPage() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="border p-3 rounded-lg outline-none"
+            required
           />
 
           <input
@@ -50,11 +51,12 @@ function LoginPage() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="border p-3 rounded-lg outline-none"
+            required
           />
 
           <button
             type="submit"
-            className="bg-black text-white p-3 rounded-lg hover:opacity-90 bg-violet-500 hover:bg-violet-600 focus:outline-2 focus:outline-offset-2 focus:outline-violet-500 active:bg-violet-700"
+            className="bg-violet-500 text-white p-3 rounded-lg hover:bg-violet-600 focus:outline-2 focus:outline-offset-2 focus:outline-violet-500 active:bg-violet-700"
           >
             Login
           </button>

@@ -1,6 +1,5 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 
 function RegisterPage() {
@@ -24,22 +23,28 @@ function RegisterPage() {
 
       navigate("/");
     } catch (error) {
-      alert(error.response.data.error);
+      alert(error.response?.data?.error || "Registration failed");
     }
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="bg-white p-8 rounded-2xl shadow-lg w-[400px]">
-        <h1 className="text-3xl font-bold text-center mb-6">Create Account</h1>
+        <h1 className="text-3xl font-bold text-center mb-6">
+          Create Account
+        </h1>
 
-        <form onSubmit={handleRegister} className="flex flex-col gap-4">
+        <form
+          onSubmit={handleRegister}
+          className="flex flex-col gap-4"
+        >
           <input
             type="text"
             placeholder="Enter name"
             value={name}
             onChange={(e) => setName(e.target.value)}
             className="border p-3 rounded-lg outline-none"
+            required
           />
 
           <input
@@ -48,6 +53,7 @@ function RegisterPage() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="border p-3 rounded-lg outline-none"
+            required
           />
 
           <input
@@ -56,11 +62,12 @@ function RegisterPage() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="border p-3 rounded-lg outline-none"
+            required
           />
 
           <button
             type="submit"
-            className="bg-black text-white p-3 rounded-lg hover:opacity-90 bg-violet-500 hover:bg-violet-600 focus:outline-2 focus:outline-offset-2 focus:outline-violet-500 active:bg-violet-700"
+            className="bg-violet-500 text-white p-3 rounded-lg hover:bg-violet-600 focus:outline-2 focus:outline-offset-2 focus:outline-violet-500 active:bg-violet-700"
           >
             Register
           </button>
@@ -68,7 +75,10 @@ function RegisterPage() {
 
         <p className="mt-5 text-center">
           Already have an account?{" "}
-          <Link to="/" className="text-blue-600 font-semibold">
+          <Link
+            to="/"
+            className="text-blue-600 font-semibold"
+          >
             Login
           </Link>
         </p>
